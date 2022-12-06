@@ -19,10 +19,6 @@ def getStartOfPacket(buffer, uniqueChars):
                 duplicateFound = True
                 break
             charToCheck = buffer[index - i]
-            # print(char, charToCheck, i)
-            if charToCheck == char:
-                duplicateFound = True
-                break
             if charToCheck in setOfPreviousChars:
                 duplicateFound = True
                 break

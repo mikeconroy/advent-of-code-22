@@ -50,7 +50,7 @@ def updateNonBeaconCells(grid, sensor, beacon):
                     grid[cellToUpdate] = "#"
     return grid
 
-# Gives an answer in 22 Seconds by focusing on the row the question requests.
+# Gives an answer in 20 Seconds by focusing on the row the question requests.
 def part1(y=2_000_000):
     # Grid is a HashMap of coordinates where Sensors & Beacons are
     # Key Coordinate Tuple (x,y) -> Value is B for Beacon or S for Sensor
@@ -64,7 +64,9 @@ def part1(y=2_000_000):
     for sensor in sensorToBeacon:
         # grid = updateNonBeaconCells(grid, sensor, sensorToBeacon[sensor])
         distance = getManhattanDistance(sensor, sensorToBeacon[sensor])
-        if (abs(sensor[1]) + distance) >= 10:
+        # This check will be important for part 2 (scanning row by row)
+        # Confirms whether the sensor distance is in range of the row being scanned
+        if (abs(sensor[1]) + distance) >= y:
             for x in range(sensor[0] - distance, sensor[0] + distance):
                 if getManhattanDistance(sensor, (x, y)) <= distance and grid.get((x, y), ".") == ".":
                     grid[(x, y)] = "#"
@@ -82,7 +84,10 @@ def part1(y=2_000_000):
 
     return noBeaconCount
 
+# Distress Beacon is between (0, 0) (0, 4_000_000) (4_000_000, 0) (4_000_000, 4_000_000)
+# Tuning Frequecy = (x * 4_000_000) + y
 def part2():
+    
     return 0
     
 # print("PART 1:", part1(y=10))

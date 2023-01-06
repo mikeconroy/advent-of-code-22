@@ -27,9 +27,6 @@ def createGrid():
         sensorToBeacon[sensor] = beacon
     return grid, sensorSet, beaconSet, sensorToBeacon
 
-def getManhattanDistance(start, end):
-    return abs(start[0] - end[0]) + abs(start[1] - end[1])
-
 # Updates all cells within (or equal to) the manhattan distance from the sensor to beacon
 # It does this by looping through each cell within the square surrounding the sensor
 # Square contains all cells within MHD including squares that aren't.
@@ -49,6 +46,9 @@ def updateNonBeaconCells(grid, sensor, beacon):
                 if grid.get(cellToUpdate, ".") == ".":
                     grid[cellToUpdate] = "#"
     return grid
+
+def getManhattanDistance(start, end):
+    return abs(start[0] - end[0]) + abs(start[1] - end[1])
 
 # Gives an answer in 20 Seconds by focusing on the row the question requests.
 def part1(y=2_000_000):
@@ -84,12 +84,60 @@ def part1(y=2_000_000):
 
     return noBeaconCount
 
+def calculateSensorDistances(sensorToBeacon):
+    sensorToBeaconDistance = dict()
+    for sensor in sensorToBeacon:
+        sensorToBeaconDistance[sensor] = getManhattanDistance(sensor, sensorToBeacon[sensor])
+    return sensorToBeaconDistance
+
+def isInRange(cell, sensor, distance):
+    if getManhattanDistance(cell, sensor) <= distance:
+        return True
+    else:
+        return False
+
+# Calculates the new Column/X that the search can skip to in that row.
+def skipTo(currentCell, sensor, distance):
+    return sensor[0] + (distance - abs(sensor[1] - currentCell[1]))
+
+def findDistressBeacon(distressBeaconSearchSpace, sensorSet, beaconSet, sensorToBeaconDistance):
+    # Loop around each cell in the search space
+    for y in range(distressBeaconSearchSpace[0], distressBeaconSearchSpace[1] + 1):
+        # We need to loop through x 'manually' as we need to skip values at certain points.
+        x = 0
+        while x < distressBeaconSearchSpace[1]:
+            currentCell = (x,y)
+            # Skip cells which are already sensors or beacons.
+            if currentCell not in sensorSet and currentCell not in beaconSet:
+                # Check each sensor for any in range of the current cell
+                sensorInRangeFound = False
+                for sensor in sensorToBeaconDistance:
+                    if isInRange(currentCell, sensor, sensorToBeaconDistance[sensor]):
+                        sensorInRangeFound = True
+                        x = skipTo(currentCell, sensor, sensorToBeaconDistance[sensor])
+                if sensorInRangeFound == False:
+                    return currentCell
+            x += 1
+    return None
+
 # Distress Beacon is between (0, 0) (0, 4_000_000) (4_000_000, 0) (4_000_000, 4_000_000)
 # Tuning Frequecy = (x * 4_000_000) + y
-def part2():
-    
-    return 0
+# Brute Force with an optimization of skipping X Values when a sensor in range is found.
+# We are able to skip based on the symmetry of the manhattan distance.
+# Finds an answer in: 180 Seconds
+def part2(distressBeaconSearchSpace=(0, 4_000_000)):
+    grid, sensorSet, beaconSet, sensorToBeacon = createGrid()
+
+    sensorToBeaconDistance = calculateSensorDistances(sensorToBeacon)
+
+    distressBeacon = findDistressBeacon(distressBeaconSearchSpace,
+                                        sensorSet,
+                                        beaconSet,
+                                        sensorToBeaconDistance)
+    print(distressBeacon)       
+    return (distressBeacon[0] * 4_000_000) + distressBeacon[1]
     
 # print("PART 1:", part1(y=10))
+# print("PART 2:", part2((0, 20)))
 print("PART 1:", part1())
 print("PART 2:", part2())

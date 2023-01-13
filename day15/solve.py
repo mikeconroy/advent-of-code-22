@@ -134,10 +134,14 @@ def part2(distressBeaconSearchSpace=(0, 4_000_000)):
                                         sensorSet,
                                         beaconSet,
                                         sensorToBeaconDistance)
-    print(distressBeacon)       
     return (distressBeacon[0] * 4_000_000) + distressBeacon[1]
     
 # print("PART 1:", part1(y=10))
 # print("PART 2:", part2((0, 20)))
 print("PART 1:", part1())
 print("PART 2:", part2())
+
+# More efficient ways for Part 2:
+# Search around the perimeters of Sensors: https://www.reddit.com/r/adventofcode/comments/zmfwg1/2022_day_15_part_2_seekin_for_the_beacon/
+# Use Line Intersections (borders) to locate the distress beacon: https://www.reddit.com/r/adventofcode/comments/zmw9d8/comment/j0dhu1w/?utm_source=share&utm_medium=web2x&context=3
+# Merge ranges of sensors for each row: https://www.reddit.com/r/adventofcode/comments/zmtpwz/comment/j0dcmtc/?utm_source=share&utm_medium=web2x&context=3

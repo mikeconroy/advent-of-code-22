@@ -1,4 +1,3 @@
-import copy
 f = open("input", "r")
 
 inputArray = []

@@ -51,6 +51,21 @@ def bfs(valves, start):
 # https://www.reddit.com/r/adventofcode/comments/zo21au/2022_day_16_approaches_and_pitfalls_discussion/
 # https://www.reddit.com/r/adventofcode/comments/zph9em/2022_day_16_part_1_where_do_i_even_begin/
 # Check all permutations of valve paths with DFS and return the one that has the best rate within the time frame.
+# Optimization:
+#   from functools import cache
+#   @cache
+#   Could have been used if frozenset was used instead of set in the parameters.
+# 
+# https://youtu.be/bLMj50cpOug?t=1100
+# The state of the 15 valves could have been stored in a bitmask where 0 is closed & 1 is openn.
+# bit = 1 << valve_index
+# if bitmask & bit:
+#   Valve is already enabled
+#   110100
+#   000100
+#  =000100 
+# Then calculating new bitmask:
+#   bitmask | bit:
 def find_best_rate(time, current_valve, valves_turned_on, TOTAL_TIME=30):    
     if time >= (TOTAL_TIME - 1):
         return 0
@@ -150,5 +165,4 @@ def part2():
     return best_rate
     
 print("PART 1:", part1())
-# 1729 is too low
 print("PART 2:", part2())

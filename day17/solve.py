@@ -197,35 +197,6 @@ def part2():
         # Create a new rock so we don't modify the shapes array
         rock = create_falling_rock(rock_type, current_height)
 
-        # Also need to check the floor pattern.
-        relative_heights = get_relative_heights(current_heights, current_height)
-        state = (rocks_dropped % 5, jet_index % num_jets, relative_heights)
-        # print(relative_heights)
-        if state in cached_states and cycle_hit == False:
-            print("Cycle Hit.")
-            print("Rocks Dropped:", rocks_dropped)
-            print("State Hit (rock_type, jet_index, relative_heights):", state)
-            print("Cached State (height, rocks_dropped):", cached_states[state])
-            cycle_hit = True
-            # Amount of height added in the cycle
-            cycle_height = current_height - cached_states[state][0]
-            # Number of rocks dropped in the cycle
-            cycle_length = rocks_dropped - cached_states[state][1]
-
-            print(target,"-", cached_states[state][1], "/", cycle_length)
-            times_to_repeat_cycle = (target - cycle_length) // cycle_length
-            print(times_to_repeat_cycle)
-            # Used to calculate the delta to reach 1_000_000_000_000 after processing.
-            height_at_cycle = current_height
-            height_added_in_cycle = cycle_height * times_to_repeat_cycle
-            rocks_dropped = cached_states[state][1] + (cycle_length * times_to_repeat_cycle)
-            print("Rocks Dropped:", rocks_dropped)
-            print("Rocks Dropped in Cycle:", cycle_length)
-            print("Height Added During Cycle:", cycle_height)
-            next
-        else:
-            cached_states[state] = (current_height, rocks_dropped)
-
         # Shift Rock in the appropriate direction based on the jet
         able_to_drop = True
         while able_to_drop:
@@ -236,15 +207,35 @@ def part2():
 
         settled_rocks.update(rock)
         current_height, current_heights = get_new_heights(rock, current_height, current_heights)
-        # settled_rocks = settle_rock(rock, settled_rocks)
-        # current_height = get_height(settled_rocks)
         rocks_dropped += 1
+        relative_heights = get_relative_heights(current_heights, current_height)
+        state = (rocks_dropped % 5, jet_index % num_jets, relative_heights)
+
+        if state in cached_states and cycle_hit == False:
+            cycle_hit = True
+            # Amount of height added in the cycle
+            cycle_height = current_height - cached_states[state][0]
+            # Number of rocks dropped in the cycle
+            cycle_length = rocks_dropped - cached_states[state][1]
+            times_to_repeat_cycle = (target - rocks_dropped) // cycle_length
+            print(" Cycle Hit.")
+            print(" Rocks Dropped:", rocks_dropped)
+            print(" Rocks Dropped at Cycle Start:", (rocks_dropped - cycle_length))
+            print(" Cycle Length:", cycle_length)
+            print(" Cycle Height:", cycle_height)
+            print(" Cached State (height, rocks_dropped):", cached_states[state])
+            print(" Repeat Cycle:", times_to_repeat_cycle)
+            height_added_in_cycle = cycle_height * times_to_repeat_cycle
+            rocks_dropped += (cycle_length * times_to_repeat_cycle)
+            print(" Rocks Dropped:", rocks_dropped)
+            print(" Height Added:", height_added_in_cycle)
+            next
+        else:
+            cached_states[state] = (current_height, rocks_dropped)
 
     current_height += height_added_in_cycle
-    print(current_height)
-    current_height -= (height_at_cycle - cycle_height)
+    print(" Rocks Dropped:", rocks_dropped)
     return current_height
     
 print("PART 1:", part1(2022))
-# 1597714288343 - Too high
 print("PART 2:", part2())

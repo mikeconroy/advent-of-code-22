@@ -4,10 +4,11 @@ cubes_array = []
 for line in f.readlines():
     line = line.strip()
     cube = tuple(map(int, line.split(",")))
+    
     cubes_array.append(cube)
 
 class Cube():
-    def __init__(self, coordinates, cubes=dict()):
+    def __init__(self, coordinates, cubes=list()):
         self.x = coordinates[0]
         self.y = coordinates[1]
         self.z = coordinates[2]
@@ -24,7 +25,7 @@ class Cube():
             (self.x, self.y, self.z + 1),
             (self.x, self.y, self.z - 1),
         }
-        for cube in cubes_array:
+        for cube in cubes:
             # Ignore the current cube
             if cube == self.coords:
                 continue
@@ -39,74 +40,99 @@ class Cube():
     def get_surface_area(self):
         return 6 - len(self.neighbours)
 
-def part1():
-    cubes = dict()
-    for cube in cubes_array:
-        cubes[cube] = Cube(cube)
+    def __repr__(self):
+        return str(self.coords) + str(self.neighbours)
 
+def get_total_surface_area(cubes):
     total_surface_area = 0
     for cube in cubes.values():
         total_surface_area += cube.get_surface_area()
-
     return total_surface_area
 
-    # The following worked for the example input but not the proper input.
-    # Detected which faces were connected and then subtracted those from the total faces.
-    # total_faces = len(cubes) * 6
+def part1():
+    cubes = dict()
+    for cube in cubes_array:
+        cubes[cube] = Cube(cube, cubes_array)
 
-    # x_y_combs = dict()
-    # x_z_combs = dict()
-    # y_z_combs = dict()
-    # connections = 0
-    # for cube in cubes:
-    #     x = cube[0]
-    #     y = cube[1]
-    #     z = cube[2]
-    #     # Check whether cubes are adjacents on each axis.
-    #     if (x,y) in x_y_combs:
-    #         if (z-1) in x_y_combs[(x,y)] or (z+1) in x_y_combs[(x,y)]:
-    #             connections += 1
-    #         x_y_combs[(x,y)].add(z)
-    #     else:
-    #         x_y_combs[(x,y)] = {z}
-    #     if (x,z) in x_z_combs:
-    #         if (y-1) in x_z_combs[(x,z)] or (y+1) in x_z_combs[(x,z)]:
-    #             connections += 1
-    #         x_z_combs[(x,z)].add(y)
-    #     else:
-    #         x_z_combs[(x,z)] = {y}
-    #     if (y,z) in y_z_combs:
-    #         if (x-1) in y_z_combs[(y,z)] or (x+1) in y_z_combs[(y,z)]:
-    #             connections += 1
-    #         y_z_combs[(y,z)].add(x)
-    #     else:
-    #         y_z_combs[(y,z)] = {x}
-    #     print(cube, connections)
-
-    # print("Total Faces:", total_faces)
-    # print("Connections:", connections)
-    # return total_faces - (connections * 2)
+    return get_total_surface_area(cubes)
 
 
-    # The following doesn't work as it is all sides not connected to another cube.
-    # This assumes looking at the shape from each side (x,y,z) tells you the surface area.
-    # This is incorrect as cubes can overhang and 'hide'.
-    # print(connections)
-    # print(total_faces)
-    # return total_faces - connections
-    # x_y_coords = set()
-    # x_z_coords = set()
-    # y_z_coords = set()
-    # for cube in cubes:
-    #     x_y_coords.add((cube[0], cube[1]))
-    #     x_z_coords.add((cube[0], cube[2]))
-    #     y_z_coords.add((cube[1], cube[2]))
-    
-    # return (len(x_y_coords) * 2) + (len(x_z_coords) * 2) + (len(y_z_coords) * 2) 
+# Find all Cubes in the search space (total container)
+# that aren't inside the droplet.
+# BFS search from (0,0,0) and find the set of all 
+def bfs_container(container, droplet):
+    exterior_cubes = set()
+    seen = set()
+    queue = list()
+    queue.append(container[(-1,-1,-1)])
+    count = 0
+    while queue:
+        current_cube = queue.pop(0)
+        count += 1
+        if current_cube not in droplet:
+            exterior_cubes.add(current_cube.coords)
+        for neighbour in current_cube.neighbours:
+            if not container[neighbour] in seen:
+                queue.append(container[neighbour])
+                seen.add(container[neighbour])
+    return exterior_cubes
 
+# Minimum Value = 0
+# Maximum Value = 21
+# Idea:
+#   Create a Superset of Cubes
+#   (0,0,0)
+#   (22,22,22)
+#   Loop through each cube:
+#       Only look at cubes not in the droplet (Aka BFS from 0,0,0)
+#       BFS neighbours
+#       Don't search cubes that are part of the droplet
+#   Add the cubes inside the droplets to the droplet shape
+#   Calculate total surface area
+# Another option is to use DFS against every cube in search space:
+#   If cube is on the edge of search space
+#   Mark the cube as exterior in a set
+#   Mark any cubes that visit this cube as exterior in the same set
+#   Any cubes that are droplet or don't reach the edge are marked as interior.
+# Quick and dirty but works-
 def part2():
-    return 0
+    
+    # Initial droplet
+    droplet = dict()
+    for cube in cubes_array:
+        droplet[cube] = Cube(cube)
 
-# 7292 is too high
+    # All cubes in the 'container' including droplet.
+    search_space = []
+    # All cubes in the 'container' excluding the droplet
+    exterior = []
+    for x in range(-1, 23):
+        for y in range(-1, 23):
+            for z in range(-1, 23):
+                search_space.append((x,y,z))
+                if (x,y,z) not in droplet:
+                    exterior.append((x,y,z))
+
+    exterior_dict = dict()
+    for cube in search_space:
+        #TODO: Double check this - remove if necesarry
+        if (x,y,z) not in droplet:
+            exterior_dict[cube] = Cube(cube, exterior)
+    
+    # Exterior cubes are the cubes external to the droplet
+    # AKA the space the water can reach outside.
+    exterior_cubes = bfs_container(exterior_dict, droplet)
+    # Create list of tuples in the droplet
+    solid_droplet_list = list()
+    for cube in search_space:
+        if cube not in exterior_cubes:
+            solid_droplet_list.append(cube)
+
+    new_droplet_cubes = dict()
+    for cube in solid_droplet_list:
+        new_droplet_cubes[cube] = Cube(cube, solid_droplet_list)
+
+    return get_total_surface_area(new_droplet_cubes)
+
 print("PART 1:", part1())
 print("PART 2:", part2())

@@ -75,7 +75,4 @@ def part2():
         yell, min, max = calc_new_yell(yell, too_high, min, max)
 
 print("PART 1:", part1())
-# 3876907167501 is too high
-# 3876907167499 is too high
-# 3876907167495 is the right answer
 print("PART 2:", part2())
